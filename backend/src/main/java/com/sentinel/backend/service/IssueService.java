@@ -13,18 +13,18 @@ public class IssueService {
     @Autowired
     private IssueRepository issueRepository;
 
-    // 1. Save a new Issue (Report a bug)
+    // 👇 Eliminamos el ChatClient temporalmente para que compile
+    // private final ChatClient chatClient;
+
     public Issue createIssue(Issue issue) {
-        // Later, we will ask AI here! 🤖
+        // Guardamos el bug directamente sin consultar a la IA por ahora
         return issueRepository.save(issue);
     }
 
-    // 2. Get all Issues (For the Dashboard)
     public List<Issue> getAllIssues() {
         return issueRepository.findAll();
     }
 
-    // 3. Get one Issue (For details)
     public Issue getIssueById(Long id) {
         return issueRepository.findById(id).orElse(null);
     }
