@@ -37,6 +37,14 @@ public class Issue {
         if (severity == null) severity = Severity.MEDIUM;
     }
 
+    public void setDescription(String s) {
+
+    }
+
+    public String getDescription() {
+        return null;
+    }
+
     // Enums to restrict values (Validation!)
     public enum Severity {
         LOW, MEDIUM, HIGH, CRITICAL
