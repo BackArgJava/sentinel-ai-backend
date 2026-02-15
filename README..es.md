@@ -1,56 +1,34 @@
-# 🛡️ Sentinel AI
+# 🛡️ Sentinel AI - Panel de Diagnóstico de Errores
 
-> **El Rastreador de Bugs que Piensa.**
-> Un dashboard inteligente de gestión de incidencias que utiliza la IA de Google Gemini para analizar errores y sugerir soluciones automáticamente en tiempo real.
+## 🇪🇸 Versión en Español
 
-> *[🇺🇸 Read in English](README.md)*
+### Acerca del Proyecto
+Sentinel AI es una herramienta de diagnóstico Full-Stack diseñada para analizar, explicar y resolver excepciones de backend en Java en tiempo real. Al integrar una API REST de Spring Boot con el último modelo de IA Gemini de Google, actúa como un Desarrollador Senior virtual, proporcionando resoluciones de código instantáneas a través de una interfaz moderna en React.
 
-![Estado del Proyecto](https://img.shields.io/badge/status-activo-success)
-![Java](https://img.shields.io/badge/Java-21-orange)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.5-brightgreen)
-![React](https://img.shields.io/badge/React-18-blue)
-![Modelo IA](https://img.shields.io/badge/AI-Gemini%201.5%20Flash-8E75B2)
+### 🏗️ Arquitectura y Tecnologías
 
----
+![Diagrama de Arquitectura](./architecture.png)
 
-## 📖 Sobre el Proyecto
+Este proyecto demuestra una arquitectura Full-Stack completa y desacoplada:
+* **Frontend:** React, Vite, React-Markdown, CSS Personalizado (Tema Oscuro/Cyber)
+* **Backend:** Java, Spring Boot, Spring Web, Base de Datos MySQL
+* **Integración de IA:** Spring AI, Google Gemini 2.5 Flash
+* **Herramientas:** Maven, npm
 
-**Sentinel AI** es una aplicación Full-Stack diseñada para modernizar la forma en que los desarrolladores manejan los reportes de errores. En lugar de simplemente almacenar registros de errores (logs), Sentinel los "lee" activamente.
+### 🔒 Enfoque en Seguridad
+Un enfoque principal de este proyecto es la ciberseguridad y la gestión segura de credenciales.
+* **Variables de Entorno:** Las claves API y credenciales de bases de datos nunca están codificadas en el texto. Se inyectan en tiempo de ejecución utilizando variables de entorno seguras (`${GEMINI_API_KEY}`).
+* **Configuración CORS:** El backend está configurado para aceptar de forma segura el intercambio de recursos de origen cruzado desde el puerto específico del frontend (Vite).
 
-Cuando un usuario envía un reporte de error (por ejemplo, un *stack trace* o una descripción del fallo), el backend intercepta los datos, consulta a **Google Gemini AI**, y adjunta una solución probable o una explicación técnica al ticket antes de guardarlo en la base de datos.
+### 🚀 Cómo Ejecutar Localmente
 
-### ✨ Características Principales
-* **🤖 Análisis Potenciado por IA:** Sugiere soluciones automáticamente para los bugs utilizando Google Gemini 1.5 Flash.
-* **⚡ Dashboard en Tiempo Real:** Construido con React & Vite para actualizaciones instantáneas.
-* **🔐 Backend Seguro:** Arquitectura robusta en Spring Boot con Spring Data JPA.
-* **💾 Almacenamiento Persistente:** Integración con base de datos MySQL para un resguardo de datos confiable.
-* **API RESTful:** Comunicación limpia y eficiente entre Frontend y Backend.
+**1. Iniciar el Backend (Puerto 8081)**
+* Asegúrate de tener instalado Java 17+ y MySQL en ejecución.
+* Configura tu variable de entorno: `export GEMINI_API_KEY="tu_api_key_aqui"`
+* Ejecuta la aplicación Spring Boot a través de tu IDE o Maven.
 
----
-
-## 🛠️ Stack Tecnológico
-
-### Backend (El Cerebro)
-* **Lenguaje:** Java 21
-* **Framework:** Spring Boot 3.2.5
-* **Integración IA:** Spring AI 1.1.0 (Google Gemini)
-* **Base de Datos:** MySQL 8.0+
-* **Herramienta de Construcción:** Maven
-
-### Frontend (La Cara)
-* **Framework:** React.js
-* **Herramientas:** Vite
-* **Cliente HTTP:** Axios
-* **Estilos:** CSS Modules / Standard CSS
-
----
-
-## ⚙️ Arquitectura
-
-```mermaid
-graph LR
-    A[Usuario / Frontend React] -- JSON --> B[Backend Spring Boot]
-    B -- Guardar Datos --> C[(Base de Datos MySQL)]
-    B -- "¿Cómo arreglo esto?" --> D{IA Google Gemini}
-    D -- "Aquí está la solución..." --> B
-    B -- Incidencia Actualizada --> A
+**2. Iniciar el Frontend (Puerto 5173)**
+```bash
+cd sentinel-frontend
+npm install
+npm run dev

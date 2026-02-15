@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import './App.css'
+import Markdown from 'react-markdown'
+
 
 function App() {
   // 1. STATE: The memory of our application
@@ -55,14 +57,25 @@ function App() {
         {isLoading ? 'Analyzing with Gemini...' : 'Analyze Error'}
       </button>
 
-      {/* The AI Response Box (Only shows up if there is an answer) */}
+      {/* The AI Response Box */}
       {aiResponse && (
-        <div style={{ marginTop: '20px', padding: '15px', border: '1px solid #444', borderRadius: '8px', backgroundColor: '#1a1a1a', color: '#fff', textAlign: 'left' }}>
-          <h3>AI Diagnosis:</h3>
-          <p style={{ whiteSpace: 'pre-wrap' }}>{aiResponse}</p>
+        <div className="ai-response-box" style={{ 
+          marginTop: '30px', 
+          padding: '25px', 
+          border: '1px solid #30363d', 
+          borderRadius: '8px', 
+          backgroundColor: '#161b22', 
+          textAlign: 'left',
+          maxWidth: '700px',
+          margin: '30px auto'
+        }}>
+          <h3 style={{ color: '#ff7b72', marginTop: 0 }}>🚨 Sentinel Diagnosis:</h3>
+          <Markdown>{aiResponse}</Markdown>
         </div>
       )}
     </div>
+
+    
   )
 }
 
