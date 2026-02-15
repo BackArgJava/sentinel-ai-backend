@@ -1,38 +1,53 @@
-# 🛡️ Sentinel AI - Error Diagnostics Dashboard
+# 🛡️ Sentinel AI
 
-[🇪🇸 Leer en Español](#-versión-en-español) | [🇬🇧 Read in English](#-english-version)
+> **The Bug Tracker that Thinks.** > An intelligent issue tracking dashboard that uses Google Gemini AI to automatically analyze bugs and suggest solutions in real-time.
+
+![Project Status](https://img.shields.io/badge/status-active-success)
+![Java](https://img.shields.io/badge/Java-21-orange)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.5-brightgreen)
+![React](https://img.shields.io/badge/React-18-blue)
+![AI Model](https://img.shields.io/badge/AI-Gemini%201.5%20Flash-8E75B2)
 
 ---
 
-## 🇬🇧 English Version
+## 📖 About The Project
 
-### About The Project
-Sentinel AI is a Full-Stack diagnostic tool designed to analyze, explain, and solve backend Java exceptions in real-time. By integrating a Spring Boot REST API with Google's latest Gemini AI model, it acts as a virtual Senior Developer, providing instant code resolutions through a modern, responsive React interface.
+**Sentinel AI** is a full-stack application designed to modernize the way developers handle bug reports. Instead of just storing error logs, Sentinel actively "reads" them.
 
-### 🏗️ Architecture & Tech Stack
+When a user submits a bug report (e.g., a stack trace or error description), the backend intercepts the data, consults **Google Gemini AI**, and appends a likely solution or explanation to the ticket before saving it to the database.
 
-![Architecture Diagram](./architecture.png)
+### ✨ Key Features
+* **🤖 AI-Powered Analysis:** Automatically suggests fixes for bugs using Google Gemini 1.5 Flash.
+* **⚡ Real-Time Dashboard:** Built with React & Vite for instant updates.
+* **🔐 Secure Backend:** Robust Spring Boot architecture with Spring Data JPA.
+* **💾 Persistent Storage:** MySQL database integration for reliable data keeping.
+* **RESTful API:** Clean communication between Frontend and Backend.
 
-This project demonstrates a complete, decoupled Full-Stack architecture:
-* **Frontend:** React, Vite, React-Markdown, Custom CSS (Dark/Cyber Theme)
-* **Backend:** Java, Spring Boot, Spring Web, MySQL Database
-* **AI Integration:** Spring AI, Google Gemini 2.5 Flash
-* **Build Tools:** Maven, npm
+---
 
-### 🔒 Security Focus
-A major focus of this project is cybersecurity and secure credential management. 
-* **Environment Variables:** API keys and sensitive database credentials are never hardcoded. They are injected at runtime using secure environment variables (`${GEMINI_API_KEY}`).
-* **CORS Configuration:** The backend is configured to securely accept cross-origin resource sharing from the specific Vite frontend port.
+## 🛠️ Tech Stack
 
-### 🚀 How to Run Locally
+### Backend (The Brain)
+* **Language:** Java 21
+* **Framework:** Spring Boot 3.2.5
+* **AI Integration:** Spring AI 1.1.0 (Google Gemini)
+* **Database:** MySQL 8.0+
+* **Build Tool:** Maven
 
-**1. Start the Backend (Port 8081)**
-* Ensure Java 17+ and MySQL are installed and running.
-* Set your environment variable: `export GEMINI_API_KEY="your_api_key_here"`
-* Run the Spring Boot application via your IDE or Maven.
+### Frontend (The Face)
+* **Framework:** React.js
+* **Tooling:** Vite
+* **HTTP Client:** Axios
+* **Styling:** CSS Modules / Standard CSS
 
-**2. Start the Frontend (Port 5173)**
-```bash
-cd sentinel-frontend
-npm install
-npm run dev
+---
+
+## ⚙️ Architecture
+
+```mermaid
+graph LR
+    A[User / React Frontend] -- JSON --> B[Spring Boot Backend]
+    B -- Save Data --> C[(MySQL Database)]
+    B -- "How do I fix this?" --> D{Google Gemini AI}
+    D -- "Here is the solution..." --> B
+    B -- Updated Issue --> A
