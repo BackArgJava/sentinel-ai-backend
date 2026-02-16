@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  # 1. The Database Container
+  database:
+    image: mysql:8.0
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: sentinel_db
+      MYSQL_ROOT_PASSWORD: root  # Change this to your actual password!
+
+  # 2. Your Spring Boot Container
+  backend-api:
+    build: .
+    restart: on-failure   # <-- ADD THIS LINE!
+    ports:
+      - "8081:8081"
+    depends_on:
+      - database
+    environment:
+      # This overrides your application.properties!
+      # Notice we use 'database' instead of 'localhost' or 'host.docker.internal'
+      SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/sentinel_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root  # Change this to your actual password!
