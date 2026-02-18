@@ -1,81 +1,97 @@
 import { useState } from 'react'
 import './App.css'
-import Markdown from 'react-markdown'
-
 
 function App() {
-  // 1. STATE: The memory of our application
-  const [errorInput, setErrorInput] = useState(''); // Remembers what the user types
-  const [aiResponse, setAiResponse] = useState(''); // Remembers what Gemini answers
-  const [isLoading, setIsLoading] = useState(false); // Remembers if we are waiting
+  // 1. React "State" variables to remember our data
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [messageColor, setMessageColor] = useState('white');
+  const [token, setToken] = useState('');
+  const [secureData, setSecureData] = useState(null);
 
-  // 2. THE BRIDGE: This function talks to your Spring Boot Server
-  const askSentinel = async () => {
-    if (!errorInput) return; // Don't do anything if the box is empty
-    
-    setIsLoading(true);
-    setAiResponse(''); // Clear the old answer
+  // 2. The Login Function
+  const handleLogin = () => {
+    setMessage("Connecting to Bouncer...");
+    setMessageColor("yellow");
 
-    try {
-      const response = await fetch('http://localhost:8081/api/issues/analyze-error', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'text/plain',
-        },
-        body: errorInput,
-      });
-
-      const text = await response.text();
-      setAiResponse(text); // Save Gemini's answer to our State
-      
-    } catch (error) {
-      setAiResponse("Connection failed! Is the Spring Boot server running?");
-    } finally {
-      setIsLoading(false); // Stop the loading animation
-    }
+    fetch('http://localhost:8081/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: username, password: password })
+    })
+    .then(response => response.json().then(data => ({ status: response.status, body: data })))
+    .then(res => {
+      if (res.status === 200) {
+        setMessage("ACCESS GRANTED!");
+        setMessageColor("#00ff88");
+        setToken(res.body.token); // Save the VIP wristband in React State!
+      } else {
+        setMessage("ACCESS DENIED!");
+        setMessageColor("red");
+      }
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      setMessage("Network Blocked!");
+      setMessageColor("red");
+    });
   };
 
-  // 3. THE FACE: What you actually see on the screen
+  // 3. The Fetch Secure Data Function
+  const fetchSecureData = () => {
+    fetch('http://localhost:8081/api/users', {
+      method: 'GET',
+      headers: { 
+        'Authorization': 'Bearer ' + token // Show the Bouncer the token
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      setSecureData(JSON.stringify(data, null, 2));
+    })
+    .catch(error => console.error("Error fetching data:", error));
+  };
+
+  // 4. The Skeleton (JSX - HTML mixed with JavaScript)
   return (
-    <div>
-      <h1>Sentinel AI Dashboard 🛡️</h1>
-      <p>Paste your Java error below and let the AI fix it.</p>
+    <div className="login-box">
+      <h2>Sentinel AI VIP</h2>
       
-      {/* The Input Box */}
-      <textarea 
-        rows="6" 
-        cols="60" 
-        placeholder='e.g., java.lang.NullPointerException...'
-        value={errorInput}
-        onChange={(e) => setErrorInput(e.target.value)}
+      <input 
+        type="text" 
+        placeholder="Enter Username" 
+        value={username}
+        onChange={(e) => setUsername(e.target.value)} 
       />
       
-      <br/><br/>
+      <input 
+        type="password" 
+        placeholder="Enter Password" 
+        value={password}
+        onChange={(e) => setPassword(e.target.value)} 
+      />
       
-      {/* The Submit Button */}
-      <button onClick={askSentinel} disabled={isLoading}>
-        {isLoading ? 'Analyzing with Gemini...' : 'Analyze Error'}
-      </button>
+      <button onClick={handleLogin}>1. ACCESS TERMINAL</button>
+      
+      <p style={{ color: messageColor, fontWeight: 'bold', marginTop: '15px' }}>
+        {message}
+      </p>
 
-      {/* The AI Response Box */}
-      {aiResponse && (
-        <div className="ai-response-box" style={{ 
-          marginTop: '30px', 
-          padding: '25px', 
-          border: '1px solid #30363d', 
-          borderRadius: '8px', 
-          backgroundColor: '#161b22', 
-          textAlign: 'left',
-          maxWidth: '700px',
-          margin: '30px auto'
-        }}>
-          <h3 style={{ color: '#ff7b72', marginTop: 0 }}>🚨 Sentinel Diagnosis:</h3>
-          <Markdown>{aiResponse}</Markdown>
-        </div>
+      {/* Only show this button IF we have a token */}
+      {token && (
+        <>
+          <button className="blue-btn" onClick={fetchSecureData}>
+            2. FETCH SECURE USERS
+          </button>
+          
+          {/* Only show the black data box IF we have secureData */}
+          {secureData && (
+            <pre className="secure-data-box">{secureData}</pre>
+          )}
+        </>
       )}
     </div>
-
-    
   )
 }
 
