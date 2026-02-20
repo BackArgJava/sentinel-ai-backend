@@ -16,6 +16,9 @@ services:
     restart: on-failure   # <-- ADD THIS LINE!
     ports:
       - "8081:8081"
+    env_file:
+      - .env  # <-- This tells Docker to load your GEMINI_API_KEY!
+      # ... keep any other database settings you already have
     depends_on:
       - database
     environment:
