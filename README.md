@@ -5,6 +5,7 @@
 > *[🇪🇸 Leer en Español](README.es.md)*
 
 ![Project Status](https://img.shields.io/badge/status-active-success)
+...
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.5-brightgreen)
 ![Security](https://img.shields.io/badge/Spring%20Security-JWT-red)
