@@ -2,6 +2,8 @@
 
 > **The Advanced AI Terminal.** > A secure, fully containerized intelligent terminal interface that uses Google Gemini AI to execute commands, analyze data, and provide real-time operational support.
 
+> *[🇪🇸 Leer en Español](README.es.md)*
+
 ![Project Status](https://img.shields.io/badge/status-active-success)
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.5-brightgreen)
