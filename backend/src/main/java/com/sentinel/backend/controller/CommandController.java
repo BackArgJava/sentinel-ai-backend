@@ -1,4 +1,4 @@
-package com.sentinel.api.controller; // Ensure this matches your package structure!
+package com.sentinel.backend.controller; // Ensure this matches your package structure!
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.http.ResponseEntity;

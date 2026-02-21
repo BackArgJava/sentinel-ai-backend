@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -23,30 +24,36 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        // 1. The Bouncer looks at the HTTP Header called "Authorization"
+        // 🟢 Dejamos pasar la request invisible (OPTIONS), pero permitimos que siga la cadena de filtros
+        if (request.getMethod().equalsIgnoreCase("OPTIONS")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
 
-        // 2. If the user has a token, and it starts with the word "Bearer "...
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        // Ignoramos si "Bearer" viene en mayúsculas o minúsculas
+        if (authHeader != null && authHeader.toLowerCase().startsWith("bearer ")) {
 
-            // 3. We cut off the word "Bearer " to get the actual cryptographic token
-            String token = authHeader.substring(7);
+            // EXTRAEMOS Y LIMPIAMOS LOS ESPACIOS FANTASMAS CON .trim()
+            String token = authHeader.substring(7).trim();
 
-            // 4. The Scanner checks if the token is fake or expired
-            if (jwtUtil.validateToken(token)) {
+            try {
+                if (SecurityContextHolder.getContext().getAuthentication() == null && jwtUtil.validateToken(token)) {
+                    String username = jwtUtil.extractUsername(token);
 
-                // 5. It's real! Let's read the username written on it
-                String username = jwtUtil.extractUsername(token);
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(username, null, new ArrayList<>());
 
-                // 6. Tell Spring Security: "This user is verified. Open the door!"
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        username, null, new ArrayList<>());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            } catch (Exception ex) {
+                SecurityContextHolder.clearContext();
             }
         }
 
-        // 7. Move to the next step in the chain (let them through, or block them if they had no token)
         filterChain.doFilter(request, response);
     }
 }

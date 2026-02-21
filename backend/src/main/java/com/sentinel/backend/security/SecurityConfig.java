@@ -25,34 +25,33 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1. LE DECIMOS AL BOUNCER QUE ACTIVE LAS REGLAS CORS (Para el navegador)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .httpBasic(basic -> basic.disable())
+                .formLogin(form -> form.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // 🟢 NEW LINE: Let the invisible Preflight requests pass the Bouncer!
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users", "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/commands/**").permitAll()
+                        // 👇 AGREGAMOS ESTA LÍNEA PARA VER EL VERDADERO ERROR 👇
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+               .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // 2. CONFIGURACIÓN CORS: "La lista de invitados"
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Permitimos que CUALQUIER navegador (*) se conecte a nuestra API
-        configuration.setAllowedOrigins(Arrays.asList("*"));
-        // Permitimos los métodos comunes
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        // Permitimos que envíen el Header de "Authorization" (para el Token VIP)
         configuration.setAllowedHeaders(Arrays.asList("*"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        // Aplicamos esta regla a todas las rutas que empiecen con /api/
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }

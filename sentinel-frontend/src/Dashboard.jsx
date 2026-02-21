@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import apiClient from './apiClient';
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -21,41 +22,32 @@ function Dashboard() {
     navigate('/');
   };
 
-  const handleSendCommand = (e) => {
+  const handleSendCommand = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
 
+    const userCommand = input;
+
     // 1. Show the user's command on the screen immediately
-    const newMessages = [...messages, { sender: 'Agent', text: input, color: '#00ff88' }];
+    const newMessages = [...messages, { sender: 'Agent', text: userCommand, color: '#00ff88' }];
     setMessages(newMessages);
     setInput('');
 
-    // 2. Grab the VIP Pass from the vault
-    const token = localStorage.getItem('sentinelToken');
-
-    // 3. Send the command to the Java Brain (Docker)
-    fetch('http://localhost:8081/api/commands/execute', {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}` 
-      },
-      body: JSON.stringify({ command: input })
-    })
-    .then(response => {
-      if (response.status === 403 || response.status === 401) {
-        throw new Error("UNAUTHORIZED! The Bouncer rejected the token.");
+    try {
+      const data = await apiClient.post('/api/commands/execute', { command: userCommand });
+      const text = typeof data === 'string' ? data : JSON.stringify(data);
+      setMessages(prev => [...prev, { sender: 'System', text, color: 'yellow' }]);
+    } catch (error) {
+      console.error('Transmission Error:', error);
+      if (error && (error.status === 401 || error.status === 403 || error.message === 'Token inválido/expirado')) {
+        setMessages(prev => [...prev, { sender: 'System', text: 'Token inválido/expirado, por favor iniciá sesión de nuevo', color: 'red' }]);
+        localStorage.removeItem('sentinelToken');
+        sessionStorage.removeItem('sentinelToken');
+        navigate('/');
+        return;
       }
-      return response.text(); 
-    })
-    .then(data => {
-      // 4. Print Java's response to the screen
-      setMessages(prev => [...prev, { sender: 'System', text: data, color: 'yellow' }]);
-    })
-    .catch(error => {
-      console.error("Transmission Error:", error);
       setMessages(prev => [...prev, { sender: 'System', text: 'ERROR: Connection to mainframe failed or unauthorized.', color: 'red' }]);
-    });
+    }
   };
 
   return (
