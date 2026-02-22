@@ -1,27 +1,32 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Login from './Login';
-import Dashboard from './Dashboard';
-import ProtectedRoute from './ProtectedRoute'; // Import the new Guard
-import './App.css'; 
+import { useState, useEffect } from 'react';
+import Login from './components/Login';
+import Terminal from './components/Terminal'; // Your existing terminal component
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Check if user is already logged in when the page loads
+  useEffect(() => {
+    const token = localStorage.getItem('sentinel_token');
+    if (token) setIsAuthenticated(true);
+  }, []);
+
+  const logout = () => {
+    localStorage.removeItem('sentinel_token');
+    setIsAuthenticated(false);
+  };
+
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Route 1: The Lobby (Public) */}
-        <Route path="/" element={<Login />} />
-        
-        {/* Route 2: The Command Center (Locked!) */}
-        <Route 
-          path="/dashboard" 
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } 
-        />
-      </Routes>
-    </BrowserRouter>
+    <div className="App">
+      {!isAuthenticated ? (
+        <Login onLoginSuccess={() => setIsAuthenticated(true)} />
+      ) : (
+        <>
+          <button onClick={logout} style={{ float: 'right', margin: '10px' }}>LOGOUT</button>
+          <Terminal />
+        </>
+      )}
+    </div>
   );
 }
 

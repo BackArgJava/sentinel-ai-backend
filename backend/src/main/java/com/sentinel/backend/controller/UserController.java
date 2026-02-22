@@ -1,5 +1,6 @@
 package com.sentinel.backend.controller;
 
+import com.sentinel.backend.model.User;
 import com.sentinel.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

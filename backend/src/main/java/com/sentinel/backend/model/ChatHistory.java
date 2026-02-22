@@ -27,15 +27,12 @@ public class ChatHistory {
     // Standard empty constructor required by Spring JPA
     public ChatHistory() {}
 
-    // 2. THE NEW CONSTRUCTOR: Notice it takes a 'User' now, not a 'String clientIp'
+    // 2. THE WORKING CONSTRUCTOR: Correctly saves data using 'this'
     public ChatHistory(User user, String userMessage, String aiResponse) {
         this.user = user;
         this.userMessage = userMessage;
         this.aiResponse = aiResponse;
         this.timestamp = LocalDateTime.now();
-    }
-
-    public ChatHistory(com.sentinel.backend.entity.User currentUser, String command, String aiResponse) {
     }
 
     // --- GETTERS & SETTERS ---
