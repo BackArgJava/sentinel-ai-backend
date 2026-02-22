@@ -1,9 +1,9 @@
 package com.sentinel.backend.controller;
 
-import com.sentinel.backend.entity.User;
+import com.sentinel.backend.model.User;
 import com.sentinel.backend.repository.UserRepository;
 import com.sentinel.backend.security.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,32 +11,43 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/auth") // The URL for the Ticket Booth
+@RequestMapping("/api/auth")
+@CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    public AuthController(UserRepository userRepository, JwtUtil jwtUtil) {
+        this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
+    }
+
+    public record LoginRequest(String username, String password) {}
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody User loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
 
-        // 1. Look for the user in the database
-        Optional<User> userOptional = userRepository.findByUsername(loginRequest.getUsername());
+        if (request.username() == null || request.password() == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Username and password required."));
+        }
 
-        // 2. If the user exists and the password matches...
-        if (userOptional.isPresent() && userOptional.get().getPassword().equals(loginRequest.getPassword())) {
+        Optional<User> userOptional = userRepository.findByUsername(request.username());
 
-            // 3. Print the VIP wristband!
-            String token = jwtUtil.generateToken(loginRequest.getUsername());
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid credentials."));
+        }
 
-            // 4. Give the token to the user
+        User dbUser = userOptional.get();
+
+        // NOTE: Plain-text comparison is NOT secure. Replace with BCryptPasswordEncoder later.
+        if (request.password().equals(dbUser.getPassword())) {
+            String token = jwtUtil.generateToken(dbUser.getUsername());
             return ResponseEntity.ok(Map.of("token", token));
         }
 
-        // 5. If wrong password, kick them out
-        return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "Invalid credentials."));
     }
 }
