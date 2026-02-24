@@ -83,6 +83,7 @@ public class CommandController {
             return ResponseEntity.ok(Map.of("response", aiResponse != null ? aiResponse : ""));
 
         } catch (Exception e) {
+            e.printStackTrace(); // <--- 🚨 ADD THIS TEMPORARILY
             // LOG PRIVACY (Point 5: Never show e.getMessage() to the user!)
             return ResponseEntity.status(500).body(Map.of("error", "ERROR: Internal neural link failure."));
         }

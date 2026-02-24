@@ -34,3 +34,8 @@ build/
 
 src/main/resources/application.properties
 .env
+# Security
+.env.*
+
+# IDEs
+.idea/

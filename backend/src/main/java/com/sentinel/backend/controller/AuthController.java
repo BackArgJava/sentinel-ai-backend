@@ -5,6 +5,7 @@ import com.sentinel.backend.repository.UserRepository;
 import com.sentinel.backend.security.JwtUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder; // <-- ADDED
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -17,10 +18,13 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder; // <-- ADDED
 
-    public AuthController(UserRepository userRepository, JwtUtil jwtUtil) {
+    // Updated constructor to include the PasswordEncoder
+    public AuthController(UserRepository userRepository, JwtUtil jwtUtil, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public record LoginRequest(String username, String password) {}
@@ -41,8 +45,9 @@ public class AuthController {
 
         User dbUser = userOptional.get();
 
-        // NOTE: Plain-text comparison is NOT secure. Replace with BCryptPasswordEncoder later.
-        if (request.password().equals(dbUser.getPassword())) {
+        // 👇 THE FIX: We use matches() instead of equals() 👇
+        // It securely compares the raw "1234" against the encrypted database string
+        if (passwordEncoder.matches(request.password(), dbUser.getPassword())) {
             String token = jwtUtil.generateToken(dbUser.getUsername());
             return ResponseEntity.ok(Map.of("token", token));
         }
