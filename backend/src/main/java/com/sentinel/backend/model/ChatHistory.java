@@ -16,6 +16,10 @@ public class ChatHistory {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "conversation_id", nullable = false)
+    private Conversation conversation;
+
     @Column(columnDefinition = "TEXT", nullable = false)
     private String userMessage;
 
@@ -27,9 +31,10 @@ public class ChatHistory {
     // Standard empty constructor required by Spring JPA
     public ChatHistory() {}
 
-    // 2. THE WORKING CONSTRUCTOR: Correctly saves data using 'this'
-    public ChatHistory(User user, String userMessage, String aiResponse) {
+    // Update your existing constructor to require a Conversation
+    public ChatHistory(User user, Conversation conversation, String userMessage, String aiResponse) {
         this.user = user;
+        this.conversation = conversation; // <-- Link it!
         this.userMessage = userMessage;
         this.aiResponse = aiResponse;
         this.timestamp = LocalDateTime.now();
@@ -51,4 +56,7 @@ public class ChatHistory {
 
     public LocalDateTime getTimestamp() { return timestamp; }
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+
+    public Conversation getConversation() { return conversation; }
+    public void setConversation(Conversation conversation) { this.conversation = conversation; }
 }
