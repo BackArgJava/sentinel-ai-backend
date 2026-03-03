@@ -18,21 +18,62 @@ export default function Terminal() {
   // 3. ALL STATE (HOOKS) MUST BE INSIDE THE FUNCTION
   // ==========================================
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [conversations, setConversations] = useState([
-    { title: 'Debugged Controller' },
-    { title: 'System Check' }
-  ]);
+  const [conversations, setConversations] = useState([]); // Inicia vacío, se llena con la base de datos
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([
     { sender: 'system', text: 'System initialized. Waiting for command...' }
   ]);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [activeConversationId, setActiveConversationId] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false); // ¡Restaurado!
 
   // ==========================================
-  // 4. FUNCTIONS AND LOGIC
+  // 4. INITIATING BOOT SEQUENCE: FETCH SIDEBAR ARCHIVES
   // ==========================================
-  const handleSelectConversation = (idx) => {
-    // TODO: Load conversation by idx
+  const fetchSidebarHistory = async () => {
+    try {
+      const token = localStorage.getItem('sentinel_token');
+      const response = await fetch('http://localhost:8081/api/commands/conversations', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setConversations(data); 
+      }
+    } catch (error) {
+      console.error("ERROR: Failed to establish link to Archives.", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSidebarHistory();
+  }, []);
+
+  // ==========================================
+  // 5. FUNCTIONS AND LOGIC
+  // ==========================================
+  const handleSelectConversation = async (id) => {
+    try {
+      setIsProcessing(true);
+      const token = localStorage.getItem('sentinel_token');
+      
+      const response = await fetch(`http://localhost:8081/api/commands/conversations/${id}/messages`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMessages([
+          { sender: 'system', text: `[ ARCHIVE LOADED: Session ${id} ]` },
+          ...data
+        ]);
+        setActiveConversationId(id); 
+      }
+    } catch (error) {
+      console.error("ERROR: Failed to retrieve archive.", error);
+    } finally {
+      setIsProcessing(false);
+    }
   };
   
   const toggleSidebar = () => setSidebarOpen((open) => !open);
@@ -54,12 +95,21 @@ export default function Terminal() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ command: userMsg.text })
+        body: JSON.stringify({ 
+          command: userMsg.text,
+          conversationId: activeConversationId // Le decimos a Spring Boot en qué chat estamos
+        })
       });
       
       if (response.ok) {
         const data = await response.json();
         setMessages((prev) => [...prev, { sender: 'system', text: data.response || "Command received." }]);
+        
+        // Si es un chat nuevo, guardamos el ID que nos dio el backend y recargamos la barra lateral
+        if (data.conversationId && !activeConversationId) {
+          setActiveConversationId(data.conversationId);
+          fetchSidebarHistory(); 
+        }
       } else {
         setMessages((prev) => [...prev, { sender: 'system', text: '[!] ERROR: Connection to AI Core failed. Access Denied.' }]);
       }
@@ -71,7 +121,7 @@ export default function Terminal() {
   };
 
   // ==========================================
-  // 5. THE RETURN (UI RENDER)
+  // 6. THE RETURN (UI RENDER)
   // ==========================================
   return (
     <>
